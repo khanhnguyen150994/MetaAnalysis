@@ -99,6 +99,6 @@ mod.model <- rma.mv(yi = AUC, V = AUC_var,
                     slab = Author, data = data2_CA19_meta,
                     random = ~ 1 | Author/es.id, 
                     test = "t", method = "REML",
-                    mods = ~ `Biomarker Type`)
+                    mods = ~ `Biomarker Type` + Cohorts)
 
 summary(mod.model)
