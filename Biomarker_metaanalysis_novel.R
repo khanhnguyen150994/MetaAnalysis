@@ -78,7 +78,6 @@ full.model <- rma.mv(yi = AUC,
                      test = "t",
                      method = "REML")
 
-
 i2 <- var.comp(full.model)
 plot(i2)
 
@@ -100,6 +99,6 @@ mod.model <- rma.mv(yi = AUC, V = AUC_var,
                     slab = Author, data = data2_novel_meta,
                     random = ~ 1 | Author/es.id, 
                     test = "t", method = "REML",
-                    mods = ~ `Biomarker Type` | Cohorts)
+                    mods = ~ `Biomarker Type` + Cohorts)
 
 summary(mod.model)
