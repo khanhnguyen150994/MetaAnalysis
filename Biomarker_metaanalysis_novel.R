@@ -39,41 +39,41 @@ data2 <- data %>%
   mutate_at('Number of Markers', as.numeric) 
 
 #Convert all string columns to factors
-data2_CA19 <- data2 %>% 
+data2_novel <- data2 %>% 
   filter(`CA19-9 or Novel` == 'Novel') %>%
   mutate_if(sapply(data2, is.character), as.factor)
 
 #Generate the metaanalysis for the markers containing novel markers only
-m.gen_results <- metagen(TE = data2_CA19$AUC,
-                         seTE = data2_CA19$"Calculated SE",
+m.gen_results <- metagen(TE = data2_novel$AUC,
+                         seTE = data2_novel$"Calculated SE",
                          lower = Q1,
                          upper = Q2,
-                         data = data2_CA19,
-                         studlab = data2_CA19$"Study ID",
+                         data = data2_novel,
+                         studlab = data2_novel$"Study ID",
                          comb.fixed = FALSE,
                          comb.random = TRUE,
                          title = "Biomarker MetaAnalysis")
 
 
 #Set the IDs for the rows in R and calculate the within group variance
-data2_CA19$es.id <- as.factor(rownames(data2_CA19))
-data2_CA19_variance <- as.data.frame(apply(data2_CA19[,12], 2, function(x) tapply(x, data2_CA19$`Study ID`, var)))
-colnames(data2_CA19_variance)[1] <- "AUC_var"
+data2_novel$es.id <- as.factor(rownames(data2_novel))
+data2_novel_variance <- as.data.frame(apply(data2_novel[,12], 2, function(x) tapply(x, data2_novel$`Study ID`, var)))
+colnames(data2_novel_variance)[1] <- "AUC_var"
 
 #Prepare the dataframe for multilevel metaanalysis with within group variance
-data2_CA19_variance[is.na(data2_CA19_variance)] = 0.0000001
-data2_CA19_variance$AUC_var[data2_CA19_variance$AUC_var == 0] = 0.0000001
-data2_CA19_variance$'Study ID' <- rownames(data2_CA19_variance)
-data2_CA19_meta <- left_join(data2_CA19, data2_CA19_variance)
-colnames(data2_CA19_meta)[1] <- 'Study_ID'
-colnames(data2_CA19_meta)[5] <- 'Author'
+data2_novel_variance[is.na(data2_novel_variance)] = 0.0000001
+data2_novel_variance$AUC_var[data2_novel_variance$AUC_var == 0] = 0.0000001
+data2_novel_variance$'Study ID' <- rownames(data2_novel_variance)
+data2_novel_meta <- left_join(data2_novel, data2_novel_variance)
+colnames(data2_novel_meta)[1] <- 'Study_ID'
+colnames(data2_novel_meta)[5] <- 'Author'
 
 
 #Perform the multilevel metaanalysis based on Author and new ID
 full.model <- rma.mv(yi = AUC, 
                      V = AUC_var, 
                      slab = Author, 
-                     data = data2_CA19_meta,
+                     data = data2_novel_meta,
                      random = ~ 1 | Author/es.id, 
                      test = "t",
                      method = "REML")
@@ -86,7 +86,7 @@ plot(i2)
 l3.removed <- rma.mv(yi = AUC, 
                      V = AUC_var, 
                      slab = Author,
-                     data = data2_CA19_meta,
+                     data = data2_novel_meta,
                      random = ~ 1 | Author/es.id, 
                      test = "t", 
                      method = "REML",
@@ -97,7 +97,7 @@ anova(full.model, l3.removed)
 
 #Perform subgroup analyses in three-level models to assess moderators
 mod.model <- rma.mv(yi = AUC, V = AUC_var, 
-                    slab = Author, data = data2_CA19_meta,
+                    slab = Author, data = data2_novel_meta,
                     random = ~ 1 | Author/es.id, 
                     test = "t", method = "REML",
                     mods = ~ `Biomarker Type` | Cohorts)
