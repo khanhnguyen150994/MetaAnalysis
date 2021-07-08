@@ -33,7 +33,6 @@ selected <- c('Study ID',
 #Filter the data and change the datatypes of the relevant columns
 data2 <- data %>% 
   filter(AUC > 0.5) %>%
-  filter(`CA19-9 or Novel` == 'CA19-9') %>%
   filter(`Corresponding Author Name` != 'NA') %>%
   select(which(colMeans(is.na(.)) < 0.25)) %>% 
   select(selected) %>% 
@@ -41,6 +40,7 @@ data2 <- data %>%
 
 #Convert all string columns to factors
 data2_CA19 <- data2 %>% 
+  filter(`CA19-9 or Novel` == 'CA19-9') %>%
   mutate_if(sapply(data2, is.character), as.factor)
 
 #Generate the metaanalysis for the markers containing CA19-9 only
